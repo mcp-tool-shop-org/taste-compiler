@@ -13,6 +13,8 @@ import { checkBudgetViolations } from "../evaluators/budget-checker.js";
 import type { ExtractedMetrics } from "../evaluators/budget-checker.js";
 import { checkForbiddenPatternViolations } from "../evaluators/forbidden-checker.js";
 import type { ExtractedClassUsage } from "../evaluators/forbidden-checker.js";
+import { checkLawViolations } from "../evaluators/law-checker.js";
+import type { ExtractedInteraction } from "../evaluators/law-checker.js";
 import { runChecks, buildReport } from "../checker.js";
 import type { ExtractedTarget } from "../checker.js";
 
@@ -55,8 +57,23 @@ function makePack(overrides?: Partial<TastePack>): TastePack {
       },
       interactionLaws: [
         {
-          id: "law1",
+          id: "law-destructive-confirm",
           law: "Destructive actions require confirmation",
+          severity: "error",
+        },
+        {
+          id: "law-submit-validation",
+          law: "Form submit disabled until valid",
+          severity: "error",
+        },
+        {
+          id: "law-draft-preservation",
+          law: "Draft state preserved on back navigation",
+          severity: "error",
+        },
+        {
+          id: "law-empty-state",
+          law: "Empty states require a primary next step",
           severity: "error",
         },
       ],
@@ -547,6 +564,270 @@ describe("checkForbiddenPatternViolations", () => {
 });
 
 // ---------------------------------------------------------------------------
+// law-checker
+// ---------------------------------------------------------------------------
+
+describe("checkLawViolations", () => {
+  const pack = makePack();
+
+  it("detects destructive action without confirmation (LAW-001)", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Settings.tsx",
+        line: 42,
+        snippet: '<button onClick={handleDelete}>Delete Account</button>',
+        kind: "destructive-action",
+        hasConfirmation: false,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(1);
+    expect(violations[0].ruleId).toBe("LAW-001");
+    expect(violations[0].severity).toBe("error");
+    expect(violations[0].class).toBe("interaction-law");
+    expect(violations[0].message).toContain("Settings.tsx");
+  });
+
+  it("passes when destructive action has confirmation", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Settings.tsx",
+        line: 42,
+        snippet: "if (confirm('Delete?')) handleDelete()",
+        kind: "destructive-action",
+        hasConfirmation: true,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("detects form submit without validation gate (LAW-002)", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Login.tsx",
+        line: 18,
+        snippet: '<button type="submit">Submit</button>',
+        kind: "form-submit",
+        hasValidationGate: false,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(1);
+    expect(violations[0].ruleId).toBe("LAW-002");
+    expect(violations[0].severity).toBe("error");
+  });
+
+  it("passes when form submit has validation gate", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Login.tsx",
+        line: 18,
+        snippet: '<button type="submit" disabled={!isValid}>Submit</button>',
+        kind: "form-submit",
+        hasValidationGate: true,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("detects navigation without draft preservation (LAW-003)", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Editor.tsx",
+        line: 55,
+        snippet: "navigate('/home')",
+        kind: "navigation",
+        hasDraftPreservation: false,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(1);
+    expect(violations[0].ruleId).toBe("LAW-003");
+  });
+
+  it("passes when navigation preserves draft", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Editor.tsx",
+        line: 55,
+        snippet: "useBlocker(() => isDirty)",
+        kind: "navigation",
+        hasDraftPreservation: true,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("detects empty state without primary action (LAW-004)", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/ProjectList.tsx",
+        line: 30,
+        snippet: "<p>No projects yet</p>",
+        kind: "empty-state",
+        hasPrimaryAction: false,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(1);
+    expect(violations[0].ruleId).toBe("LAW-004");
+  });
+
+  it("passes when empty state has primary action", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/ProjectList.tsx",
+        line: 30,
+        snippet: '<EmptyState action={<Button>Create Project</Button>} />',
+        kind: "empty-state",
+        hasPrimaryAction: true,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("detects multiple violations across different law kinds", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Settings.tsx",
+        line: 42,
+        snippet: "handleDelete()",
+        kind: "destructive-action",
+        hasConfirmation: false,
+      },
+      {
+        file: "src/Form.tsx",
+        line: 10,
+        snippet: '<button type="submit">Go</button>',
+        kind: "form-submit",
+        hasValidationGate: false,
+      },
+      {
+        file: "src/Empty.tsx",
+        line: 5,
+        snippet: "<p>Nothing here</p>",
+        kind: "empty-state",
+        hasPrimaryAction: false,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(3);
+    const ruleIds = violations.map((v) => v.ruleId);
+    expect(ruleIds).toContain("LAW-001");
+    expect(ruleIds).toContain("LAW-002");
+    expect(ruleIds).toContain("LAW-004");
+  });
+
+  it("skips laws not present in pack", () => {
+    // Pack with only one law
+    const limitedPack = makePack({
+      artifacts: {
+        ...makePack().artifacts,
+        interactionLaws: [
+          {
+            id: "law-destructive-confirm",
+            law: "Destructive actions require confirmation",
+            severity: "error",
+          },
+        ],
+      },
+    });
+
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Form.tsx",
+        line: 10,
+        snippet: '<button type="submit">Go</button>',
+        kind: "form-submit",
+        hasValidationGate: false,
+      },
+    ];
+
+    // form-submit maps to law-submit-validation, which is NOT in this pack
+    const violations = checkLawViolations(limitedPack, interactions);
+    expect(violations).toHaveLength(0);
+  });
+
+  it("respects warn severity from pack", () => {
+    const warnPack = makePack({
+      artifacts: {
+        ...makePack().artifacts,
+        interactionLaws: [
+          {
+            id: "law-empty-state",
+            law: "Empty states require a primary next step",
+            severity: "warn",
+          },
+        ],
+      },
+    });
+
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/List.tsx",
+        line: 8,
+        snippet: "<p>No items</p>",
+        kind: "empty-state",
+        hasPrimaryAction: false,
+      },
+    ];
+
+    const violations = checkLawViolations(warnPack, interactions);
+    expect(violations).toHaveLength(1);
+    expect(violations[0].severity).toBe("warn");
+  });
+
+  it("clean interactions pass", () => {
+    const interactions: ExtractedInteraction[] = [
+      {
+        file: "src/Settings.tsx",
+        line: 42,
+        snippet: "confirm('Delete?') && handleDelete()",
+        kind: "destructive-action",
+        hasConfirmation: true,
+      },
+      {
+        file: "src/Login.tsx",
+        line: 18,
+        snippet: '<button disabled={!valid} type="submit">Go</button>',
+        kind: "form-submit",
+        hasValidationGate: true,
+      },
+      {
+        file: "src/Editor.tsx",
+        line: 55,
+        snippet: "useBlocker(() => isDirty)",
+        kind: "navigation",
+        hasDraftPreservation: true,
+      },
+      {
+        file: "src/Projects.tsx",
+        line: 30,
+        snippet: '<EmptyState action={<CreateButton />} />',
+        kind: "empty-state",
+        hasPrimaryAction: true,
+      },
+    ];
+
+    const violations = checkLawViolations(pack, interactions);
+    expect(violations).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // runChecks() integration
 // ---------------------------------------------------------------------------
 
@@ -599,17 +880,27 @@ describe("runChecks", () => {
           snippet: '<div className="grid grid-cols-6">',
         },
       ],
+      interactions: [
+        {
+          file: "src/Settings.tsx",
+          line: 42,
+          snippet: '<button onClick={handleDelete}>Delete Account</button>',
+          kind: "destructive-action" as const,
+          hasConfirmation: false,
+        },
+      ],
     };
 
     const violations = runChecks(pack, target);
-    // Should have violations from token, grammar, copy, budget, and forbidden checkers
+    // Should have violations from all 6 checkers
     const ruleIds = new Set(violations.map((v) => v.ruleId));
     expect(ruleIds.has("TOK-001")).toBe(true); // raw hex color
     expect(ruleIds.has("GRAM-001")).toBe(true); // banned component
     expect(ruleIds.has("COPY-001")).toBe(true); // banned phrase
     expect(ruleIds.has("BUD-001")).toBe(true); // nav budget
     expect(ruleIds.has("FP-001")).toBe(true); // forbidden class pattern
-    expect(violations.length).toBeGreaterThanOrEqual(5);
+    expect(ruleIds.has("LAW-001")).toBe(true); // destructive without confirm
+    expect(violations.length).toBeGreaterThanOrEqual(6);
   });
 });
 
@@ -644,6 +935,7 @@ describe("buildReport", () => {
       copyBlocks: [],
       metrics: {},
       classes: [],
+      interactions: [],
     };
 
     const violations = runChecks(pack, target);
@@ -669,6 +961,7 @@ describe("buildReport", () => {
       copyBlocks: [],
       metrics: {},
       classes: [],
+      interactions: [],
     };
 
     const violations = runChecks(pack, target);

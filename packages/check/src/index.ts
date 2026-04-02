@@ -18,3 +18,6 @@ export type { ExtractedMetrics } from "./evaluators/budget-checker.js";
 
 export { checkForbiddenPatternViolations } from "./evaluators/forbidden-checker.js";
 export type { ExtractedClassUsage } from "./evaluators/forbidden-checker.js";
+
+export { checkLawViolations } from "./evaluators/law-checker.js";
+export type { ExtractedInteraction } from "./evaluators/law-checker.js";

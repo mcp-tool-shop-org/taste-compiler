@@ -20,6 +20,10 @@ import {
   checkForbiddenPatternViolations,
   type ExtractedClassUsage,
 } from "./evaluators/forbidden-checker.js";
+import {
+  checkLawViolations,
+  type ExtractedInteraction,
+} from "./evaluators/law-checker.js";
 
 /**
  * All extracted data from a target app needed for taste checking.
@@ -31,6 +35,7 @@ export interface ExtractedTarget {
   copyBlocks: ExtractedCopy[];
   metrics: ExtractedMetrics;
   classes: ExtractedClassUsage[];
+  interactions: ExtractedInteraction[];
 }
 
 /**
@@ -51,6 +56,7 @@ export function runChecks(
   violations.push(
     ...checkForbiddenPatternViolations(pack, target.components, target.classes)
   );
+  violations.push(...checkLawViolations(pack, target.interactions));
 
   return violations;
 }
