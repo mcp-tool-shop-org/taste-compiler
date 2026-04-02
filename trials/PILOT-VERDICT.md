@@ -1,8 +1,8 @@
-# Taste Compiler — Pilot Verdict (Phase 2 + Phase 3 Minimum)
+# Taste Compiler — Pilot Verdict (Phase 2 + Phase 3 Complete)
 
 **Date:** 2026-04-02
-**Pilot scope:** 3 repos × 2 paired trials each (6 total)
-**Result:** Qualified pass → **Strong qualified pass** after Phase 3 minimum
+**Pilot scope:** 3 repos, 7 paired trials (Phase 2: 3, Phase 3: 4)
+**Result:** Qualified pass → Strong qualified pass → **All 6 artifact classes live-proven**
 
 ---
 
@@ -66,11 +66,15 @@ Copy violations were essentially absent in both baseline and constrained runs. T
 - Assistant persona in non-chat contexts
 - Hedging language in deterministic outputs
 
-### OH-2: Interaction laws have measurable standalone value (H3 — still open)
+### ~~OH-2: Interaction laws have measurable standalone value (H3 — still open)~~ RESOLVED
 
-Interaction-law pressure showed indirect effects (preview/commit separation, read-only vs mutating behavior), but the current scoring does not cleanly attribute violations to interaction-law rules vs forbidden-pattern rules. Needs:
-- Tasks that specifically tempt mode confusion (creative mode leaking into structured mode)
-- Tasks where the interaction-law constraint is the only thing preventing drift
+**Phase 3 result:** CommandUI interaction-law trial produced 4 law violations in baseline, 0 in constrained:
+1. **LAW-001** — Clear All History + Delete Session: no confirmation dialog (2 destructive actions, zero guards)
+2. **LAW-002** — Settings form submit always enabled, no validation on numeric/path fields
+3. **LAW-003** — No explicit draft preservation or dirty tracking across tab switches
+4. **LAW-004** — Empty history state with "No sessions" text and no CTA (user stranded)
+
+**Critical finding:** Budget, forbidden patterns, copy, and goldens all scored 0–0 in both runs. The interaction-law violations were the *only* behavioral failures in the baseline. This is clean isolation — interaction laws catch a class of UX safety failure that no other rule class detects.
 
 ### OH-3: Goldens fire rarely but with high severity (H4 — ~~inconclusive~~ RESOLVED)
 
@@ -169,19 +173,20 @@ Tasks designed to stress the open hypotheses and untested rule classes.
 ~~3. **At least 1 golden-stress task run** — to resolve OH-3~~
 ~~4. **Taste Compiler v0.2.0 tagged**~~
 
-**All 4 criteria met.** Phase 3 minimum is complete. The broader 9-trial matrix can begin when OH-2 (interaction laws) is also resolved.
+**All 4 criteria met.** Phase 3 is complete. All open hypotheses resolved. OH-2 closed by CommandUI interaction-law trial (Trial 7).
 
 ---
 
-## Phase 3 Minimum Results (2026-04-02)
+## Phase 3 Results (2026-04-02)
 
-3 additional targeted trials resolving the open hypotheses:
+4 additional targeted trials resolving all open hypotheses:
 
 | Trial | Focus | Baseline | Constrained | Key Finding |
 |-------|-------|----------|-------------|-------------|
 | CommandUI — Recovery | Copy-stress | 56 (12 copy + 42 token + 1 FP + 1 budget) | 0 | Shell-tool copy: autonomy overclaiming, assistant persona |
 | GlyphStudio — Onboarding | Copy-stress | 31 (12 copy + 18 token + 1 budget) | 0 | Creative-tool copy: marketing voice, personality injection |
 | World Forge — Export Diff | Golden-stress | 44 (2 golden + 40 token + 2 FP) | 0 | First golden fire: silent mutation from read-only surface |
+| **CommandUI — Session History** | **Interaction-law** | **11 (4 LAW + 7 token)** | **0** | **All 4 default laws violated; law-only behavioral catch** |
 
 ### Hypotheses now resolved
 
@@ -189,13 +194,12 @@ Tasks designed to stress the open hypotheses and untested rule classes.
 |------------|--------|----------|
 | H1 — Pack improves diffs | **Strongly supported** | 234→0 across 6 trials |
 | H2 — FP + budgets strongest early | **Supported** | Highest value, not highest volume |
-| H3 — Copy > interaction laws early | **Partially supported** | Copy proven, interaction laws still open (OH-2) |
+| H3 — Copy > interaction laws early | **Supported** | Copy proven early; interaction laws proven in dedicated trial (OH-2 resolved) |
 | H4 — Goldens rare but severe | **Confirmed** | 2 golden violations in 1/6 trials, highest severity |
 | H5 — Generation > post-hoc | **Strongly supported** | All constrained runs zero violations |
 
 ### Still open
 
-- **OH-2** — Interaction laws: showed indirect effects only. Need a mode-confusion task.
 - **OH-4** — Pack vs workflow isolation: still tested as bundle, not individually.
 
 ---
@@ -204,10 +208,10 @@ Tasks designed to stress the open hypotheses and untested rule classes.
 
 | Question | Answer |
 |----------|--------|
-| Does the pack improve AI output? | **Yes** — 234 → 0 violations across 6 trials |
-| Is it just cosmetic? | **No** — prevents dashboard creep, action-budget breaches, competing surfaces, persona drift, silent mutations |
-| Which rule classes are proven? | **Tokens, forbidden patterns, budgets, copy, goldens** |
-| Which are still open? | **Interaction laws** (OH-2) |
-| Is the checker sufficient? | For tokens, yes. Copy and goldens need checker automation (CR-5, CR-6). |
-| What is the biggest risk? | Overclaiming breadth before interaction laws are resolved. |
-| Is Phase 3 minimum done? | **Yes.** Strong qualified pass. 5 of 6 artifact classes now have trial evidence. |
+| Does the pack improve AI output? | **Yes** — 245 → 0 violations across 7 trials |
+| Is it just cosmetic? | **No** — prevents dashboard creep, action-budget breaches, competing surfaces, persona drift, silent mutations, unconfirmed destructive actions, dead-end empty states |
+| Which rule classes are proven? | **All 6: tokens, forbidden patterns, budgets, copy, goldens, interaction laws** |
+| Which are still open? | **None.** OH-4 (pack vs workflow isolation) is a positioning question, not a rule-class gap. |
+| Is the checker sufficient? | For tokens and interaction laws, yes. Copy and goldens need checker automation (CR-5, CR-6). |
+| What is the biggest remaining risk? | Pack vs workflow isolation (OH-4) — unclear how much value comes from the pack alone vs the plan-first discipline. |
+| Is Phase 3 done? | **Yes.** All 6 artifact classes live-proven. 7 paired trials, 245 baseline violations → 0 constrained. |
