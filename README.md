@@ -1,4 +1,12 @@
-# Taste Compiler
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/taste-compiler/readme.png" width="400" alt="Taste Compiler" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/mcp-tool-shop-org/taste-compiler/actions"><img src="https://github.com/mcp-tool-shop-org/taste-compiler/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+  <a href="https://mcp-tool-shop-org.github.io/taste-compiler/"><img src="https://img.shields.io/badge/Landing_Page-live-brightgreen" alt="Landing Page" /></a>
+</p>
 
 Compile product taste into enforceable constraints that preserve visual coherence, identity boundaries, copy discipline, complexity limits, workflow invariants, and golden-path truth under AI-generated change.
 
@@ -124,6 +132,21 @@ packages/
 
 - **OH-4: Pack vs workflow isolation** — The trials tested a bundle (pack + plan-first + diff-first). How much value comes from the pack alone vs the discipline? This is a positioning question, not a product gap.
 
+## Security
+
+Taste Compiler is a **local-only static analysis tool**. It reads source files and YAML configuration, then produces JSON/Markdown reports.
+
+- **Data touched:** YAML taste source files, compiled JSON taste packs, TSX/JSX/CSS source files (read-only)
+- **Data NOT touched:** no network requests, no databases, no user credentials, no runtime state
+- **No telemetry** is collected or sent
+- **No secrets handling** — does not read, store, or transmit credentials
+
+See [SECURITY.md](SECURITY.md) for the full policy and vulnerability reporting.
+
 ## License
 
 MIT
+
+---
+
+Built by <a href="https://mcp-tool-shop.github.io/">MCP Tool Shop</a>

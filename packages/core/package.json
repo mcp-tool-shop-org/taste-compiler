@@ -1,6 +1,6 @@
 {
   "name": "@taste-compiler/core",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Schemas, types, rule IDs, and diagnostics for Taste Compiler",
   "type": "module",
   "main": "dist/index.js",
@@ -23,5 +23,8 @@
   "devDependencies": {
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

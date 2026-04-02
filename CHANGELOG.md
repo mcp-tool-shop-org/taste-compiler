@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0] — 2026-04-02
+
+First stable release. All 6 artifact classes live-proven, Full Treatment applied.
+
+### Added
+
+- Landing page (site-theme + GitHub Pages)
+- Starlight handbook with 6 pages (overview, getting-started, artifact-classes, CLI reference, architecture, security)
+- SECURITY.md with threat model and vulnerability reporting
+- LICENSE (MIT)
+- CI workflow (Node 20+22, pnpm, build + test + CLI smoke)
+- `verify.sh` one-command build+test+smoke script
+- SHIP_GATE.md with all hard gates (A–D) passing
+
+### Changed
+
+- Version promoted from 0.3.0 to 1.0.0 across all 6 packages
+- All packages require `engines.node >= 20`
+- README updated with centered logo, CI/MIT/Landing Page badges, and MCP Tool Shop footer
+- GitHub repo metadata: description, homepage, topics
+
 ## [0.3.0] — 2026-04-02
 
 All 6 artifact classes live-proven. Phase 3 complete.

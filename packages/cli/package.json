@@ -1,6 +1,6 @@
 {
   "name": "@taste-compiler/cli",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "CLI for Taste Compiler",
   "type": "module",
   "bin": {
@@ -22,5 +22,8 @@
   "devDependencies": {
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
