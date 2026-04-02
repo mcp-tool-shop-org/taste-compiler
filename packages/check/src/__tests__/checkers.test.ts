@@ -136,6 +136,47 @@ describe("checkTokenViolations", () => {
     expect(violations[0].message).toContain("#ff5733");
   });
 
+  it("groups consecutive color violations in the same file (CR-1)", () => {
+    const styles: ExtractedStyle[] = [
+      // A constant map spanning 6 lines — should become 1 grouped violation
+      { file: "src/theme.ts", line: 10, type: "color", value: "#58a6ff", isRaw: true, snippet: 'npc: "#58a6ff"' },
+      { file: "src/theme.ts", line: 11, type: "color", value: "#f85149", isRaw: true, snippet: 'enemy: "#f85149"' },
+      { file: "src/theme.ts", line: 12, type: "color", value: "#d29922", isRaw: true, snippet: 'merchant: "#d29922"' },
+      { file: "src/theme.ts", line: 13, type: "color", value: "#3fb950", isRaw: true, snippet: 'quest-giver: "#3fb950"' },
+      { file: "src/theme.ts", line: 14, type: "color", value: "#bc8cff", isRaw: true, snippet: 'companion: "#bc8cff"' },
+      { file: "src/theme.ts", line: 15, type: "color", value: "#ff7b72", isRaw: true, snippet: 'boss: "#ff7b72"' },
+      // A separate block 20 lines away — should become a 2nd violation
+      { file: "src/theme.ts", line: 40, type: "color", value: "#fff", isRaw: true, snippet: 'color: "#fff"' },
+    ];
+
+    const violations = checkTokenViolations(pack, styles);
+    const colorViolations = violations.filter((v) => v.ruleId === "TOK-001");
+    expect(colorViolations).toHaveLength(2); // 2 groups, not 7
+
+    // First group: 6 evidence items
+    expect(colorViolations[0].evidence).toHaveLength(6);
+    expect(colorViolations[0].message).toContain("6 raw color literals");
+    expect(colorViolations[0].message).toContain("lines 10-15");
+
+    // Second group: 1 evidence item (singleton)
+    expect(colorViolations[1].evidence).toHaveLength(1);
+    expect(colorViolations[1].message).toContain("#fff");
+  });
+
+  it("groups violations per file independently", () => {
+    const styles: ExtractedStyle[] = [
+      { file: "src/A.tsx", line: 1, type: "color", value: "#abc", isRaw: true, snippet: 'color: "#abc"' },
+      { file: "src/A.tsx", line: 2, type: "color", value: "#def", isRaw: true, snippet: 'background: "#def"' },
+      { file: "src/B.tsx", line: 1, type: "color", value: "#123", isRaw: true, snippet: 'color: "#123"' },
+    ];
+
+    const violations = checkTokenViolations(pack, styles);
+    const colorViolations = violations.filter((v) => v.ruleId === "TOK-001");
+    expect(colorViolations).toHaveLength(2); // 1 per file
+    expect(colorViolations[0].evidence).toHaveLength(2); // A.tsx group
+    expect(colorViolations[1].evidence).toHaveLength(1); // B.tsx
+  });
+
   it("detects off-scale spacing", () => {
     const styles: ExtractedStyle[] = [
       {

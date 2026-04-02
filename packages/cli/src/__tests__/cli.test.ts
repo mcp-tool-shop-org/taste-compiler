@@ -181,7 +181,7 @@ describe("CLI", () => {
       const { stdout } = runMayFail(
         `check --pack ${packPath} --target ${EXAMPLE_APP} --format json`
       );
-      const report = JSON.parse(stdout.split("\n").slice(3).join("\n")); // Skip log lines
+      const report = JSON.parse(stdout.trim()); // Status messages go to stderr in JSON mode
       expect(report.violations).toBeDefined();
       expect(report.summary.errors).toBeGreaterThan(0);
     });

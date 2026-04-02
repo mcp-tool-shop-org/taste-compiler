@@ -1,6 +1,6 @@
 {
   "name": "@taste-compiler/goldens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Golden-flow definitions and baseline validators",
   "type": "module",
   "main": "dist/index.js",
