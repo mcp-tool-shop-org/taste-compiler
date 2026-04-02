@@ -122,5 +122,6 @@ export async function extractTarget(
       routeCount: routes.length,
     },
     classes: allClasses,
+    interactions: [],
   };
 }
