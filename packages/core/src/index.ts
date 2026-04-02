@@ -7,6 +7,7 @@ export {
   CoreFlowSchema,
   CritiqueNoteSchema,
   BudgetInputSchema,
+  ForbiddenPatternSeedSchema,
   TasteSourceSchema,
 } from "./schemas/source.js";
 
@@ -18,6 +19,7 @@ export type {
   CoreFlow,
   CritiqueNote,
   BudgetInput,
+  ForbiddenPatternSeed,
   TasteSource,
 } from "./schemas/source.js";
 

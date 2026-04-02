@@ -10,6 +10,7 @@ import {
   type CoreFlow,
   type CritiqueNote,
   type BudgetInput,
+  type ForbiddenPatternSeed,
 } from "@taste-compiler/core";
 
 export interface LoadResult {
@@ -36,6 +37,7 @@ async function loadYaml<T>(filePath: string): Promise<T | undefined> {
  *   flows.yaml
  *   critique.yaml
  *   budgets.yaml
+ *   forbidden-patterns.yaml  (optional)
  *   metadata.yaml
  */
 export async function loadSourceDir(dir: string): Promise<LoadResult> {
@@ -66,6 +68,8 @@ export async function loadSourceDir(dir: string): Promise<LoadResult> {
   const critique =
     (await loadYaml<CritiqueNote[]>(join(absDir, "critique.yaml"))) ?? [];
   const budgets = await loadYaml<BudgetInput>(join(absDir, "budgets.yaml"));
+  const forbiddenPatternSeeds =
+    (await loadYaml<ForbiddenPatternSeed[]>(join(absDir, "forbidden-patterns.yaml"))) ?? [];
   const metadata = await loadYaml<{
     createdBy: string;
     createdAt: string;
@@ -100,6 +104,7 @@ export async function loadSourceDir(dir: string): Promise<LoadResult> {
     flows,
     critique,
     budgets,
+    forbiddenPatternSeeds,
     metadata,
   };
 

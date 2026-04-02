@@ -290,7 +290,7 @@ function compileComplexityBudgets(source: TasteSource): ComplexityBudgetSet {
 }
 
 /**
- * Compile forbidden patterns from anti-examples and critique.
+ * Compile forbidden patterns from anti-examples, critique, and forbiddenPatternSeeds.
  */
 function compileForbiddenPatterns(norm: NormalizedSource): ForbiddenPattern[] {
   const patterns: ForbiddenPattern[] = [];
@@ -339,6 +339,55 @@ function compileForbiddenPatterns(norm: NormalizedSource): ForbiddenPattern[] {
         seen.add(id);
       }
     }
+
+    // Generic: any anti-example with "hidden" or "state" + "shift/drift"
+    if (
+      (lower.includes("hidden") && lower.includes("state")) ||
+      lower.includes("state shift") ||
+      lower.includes("blur") && lower.includes("preview")
+    ) {
+      const id = `fp-hidden-${ae.id}`;
+      if (!seen.has(id)) {
+        patterns.push({
+          id,
+          pattern: "Hidden state transition or preview/commit blur",
+          reason: ae.reason,
+          sourceRef: `anti-example:${ae.id}`,
+          severity: "error",
+        });
+        seen.add(id);
+      }
+    }
+  }
+
+  // Process explicit forbidden pattern seeds
+  for (const seed of norm.source.forbiddenPatternSeeds) {
+    if (!seen.has(seed.id)) {
+      const lower = seed.pattern.toLowerCase();
+
+      // Auto-derive detection hints from pattern text
+      const detection: ForbiddenPattern["detection"] = {};
+      if (lower.includes("chat") || lower.includes("assistant")) {
+        detection.componentNames = ["FloatingChatBubble", "ChatWidget", "AIAssistant", "ChatBubble"];
+        detection.importPatterns = ["chat-bubble", "chat-widget", "assistant"];
+      }
+      if (lower.includes("kpi") || lower.includes("stat tile") || lower.includes("dashboard")) {
+        detection.componentNames = ["DenseDataGrid", "StatCard", "KPIPanel", "MetricsDashboard"];
+      }
+      if (lower.includes("raw color") || lower.includes("color bypass") || lower.includes("token")) {
+        // Token bypass patterns — detected by CSS-var adapter, not component names
+      }
+
+      patterns.push({
+        id: seed.id,
+        pattern: seed.pattern,
+        reason: seed.rationale,
+        sourceRef: `forbiddenPatternSeed:${seed.id}`,
+        severity: "error",
+        detection: Object.keys(detection).length > 0 ? detection : undefined,
+      });
+      seen.add(seed.id);
+    }
   }
 
   return patterns;
@@ -351,9 +400,15 @@ function compileGoldens(source: TasteSource): GoldenFlowRef[] {
   return source.flows.map((flow) => ({
     id: flow.id,
     name: flow.name,
-    routes: flow.steps.map((s) => s.route),
+    routes: flow.steps.map((s) =>
+      typeof s === "string" ? s : s.route
+    ),
     invariants: flow.invariants ?? [],
-    notes: flow.steps.map((s) => s.purpose).filter(Boolean).join("; ") || undefined,
+    notes:
+      flow.steps
+        .map((s) => (typeof s === "string" ? undefined : s.purpose))
+        .filter(Boolean)
+        .join("; ") || undefined,
   }));
 }
 

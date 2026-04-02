@@ -44,9 +44,10 @@ export async function scanTailwindFile(
       });
     }
 
-    // Inline hex colors
+    // Inline hex colors (skip custom property definitions like --border: #hex)
     INLINE_HEX_RE.lastIndex = 0;
     while ((match = INLINE_HEX_RE.exec(line)) !== null) {
+      if (line.trim().startsWith("--")) continue;
       styles.push({
         file: filePath,
         line: lineNum,

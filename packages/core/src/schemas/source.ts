@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const TasteReferenceSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(["image", "url", "screenshot", "sketch"]),
+  type: z.enum(["image", "url", "screenshot", "sketch", "note"]),
   uri: z.string().min(1),
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -12,6 +12,7 @@ export const TasteReferenceSchema = z.object({
 
 export const AntiExampleSchema = z.object({
   id: z.string().min(1),
+  type: z.string().optional(),
   uri: z.string().optional(),
   reason: z.string().min(1),
   category: z
@@ -34,10 +35,13 @@ export const PrincipleSchema = z.object({
   rationale: z.string().min(1),
 });
 
-export const CoreFlowStepSchema = z.object({
-  route: z.string().min(1),
-  purpose: z.string().optional(),
-});
+export const CoreFlowStepSchema = z.union([
+  z.object({
+    route: z.string().min(1),
+    purpose: z.string().optional(),
+  }),
+  z.string().min(1),
+]);
 
 export const CoreFlowSchema = z.object({
   id: z.string().min(1),
@@ -71,6 +75,12 @@ export const BudgetInputSchema = z.object({
     .optional(),
 });
 
+export const ForbiddenPatternSeedSchema = z.object({
+  id: z.string().min(1),
+  pattern: z.string().min(1),
+  rationale: z.string().min(1),
+});
+
 export const TasteSourceSchema = z.object({
   product: z.object({
     name: z.string().min(1),
@@ -82,6 +92,7 @@ export const TasteSourceSchema = z.object({
   flows: z.array(CoreFlowSchema).default([]),
   critique: z.array(CritiqueNoteSchema).default([]),
   budgets: BudgetInputSchema.optional(),
+  forbiddenPatternSeeds: z.array(ForbiddenPatternSeedSchema).default([]),
   metadata: z.object({
     createdBy: z.string().min(1),
     createdAt: z.string().min(1),
@@ -96,4 +107,5 @@ export type CoreFlowStep = z.infer<typeof CoreFlowStepSchema>;
 export type CoreFlow = z.infer<typeof CoreFlowSchema>;
 export type CritiqueNote = z.infer<typeof CritiqueNoteSchema>;
 export type BudgetInput = z.infer<typeof BudgetInputSchema>;
+export type ForbiddenPatternSeed = z.infer<typeof ForbiddenPatternSeedSchema>;
 export type TasteSource = z.infer<typeof TasteSourceSchema>;

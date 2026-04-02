@@ -3,6 +3,7 @@ import { readdir, stat } from "node:fs/promises";
 import type { ExtractedTarget } from "@taste-compiler/check";
 import { scanReactFile } from "./react/scanner.js";
 import { scanTailwindFile } from "./tailwind/scanner.js";
+import { scanCssVarFile, scanInlineStyles } from "./cssvar/scanner.js";
 import { scanRoutes } from "./routes/scanner.js";
 import { scanCopyInFile } from "./copy/scanner.js";
 
@@ -59,18 +60,40 @@ export async function extractTarget(
     }
   }
 
-  // Scan all files for Tailwind/style patterns
-  const allFiles = await collectFiles(absDir, [
+  // Scan TSX/JSX/HTML for Tailwind/style patterns
+  // CSS files are handled by the CSS-var scanner which is :root-aware
+  const tailwindFiles = await collectFiles(absDir, [
     ".tsx",
     ".jsx",
-    ".css",
     ".html",
   ]);
-  for (const file of allFiles) {
+  for (const file of tailwindFiles) {
     try {
       const { styles, classes } = await scanTailwindFile(file);
       allStyles.push(...styles);
       allClasses.push(...classes);
+    } catch {
+      // Skip files that fail to parse
+    }
+  }
+
+  // Scan CSS files for var() token bypass
+  const cssFiles = await collectFiles(absDir, [".css"]);
+  for (const file of cssFiles) {
+    try {
+      const styles = await scanCssVarFile(file);
+      allStyles.push(...styles);
+    } catch {
+      // Skip files that fail to parse
+    }
+  }
+
+  // Scan TSX/JSX/TS files for inline style token bypass
+  const styleFiles = await collectFiles(absDir, [".tsx", ".jsx", ".ts"]);
+  for (const file of styleFiles) {
+    try {
+      const styles = await scanInlineStyles(file);
+      allStyles.push(...styles);
     } catch {
       // Skip files that fail to parse
     }

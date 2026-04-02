@@ -36,6 +36,7 @@ function makeSourceA(): TasteSource {
     critique: [
       { id: "c1", target: "header", note: "Too many actions in header", severity: "critical" },
     ],
+    forbiddenPatternSeeds: [],
     budgets: {
       maxTopLevelNavItems: 4,
       maxPrimaryActionsPerScreen: 1,
@@ -67,6 +68,7 @@ function makeSourceB(): TasteSource {
       },
     ],
     critique: [],
+    forbiddenPatternSeeds: [],
     budgets: {
       maxTopLevelNavItems: 8,
       maxPrimaryActionsPerScreen: 3,
@@ -87,6 +89,7 @@ function makeSourceC(): TasteSource {
     ],
     flows: [],
     critique: [],
+    forbiddenPatternSeeds: [],
     budgets: {
       maxTopLevelNavItems: 3,
       maxPrimaryActionsPerScreen: 1,
