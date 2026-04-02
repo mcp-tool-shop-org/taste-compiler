@@ -9,7 +9,7 @@ export const config: SiteConfig = {
   footerText: 'MIT Licensed — built by <a href="https://github.com/mcp-tool-shop-org" style="color:var(--color-muted);text-decoration:underline">mcp-tool-shop-org</a>',
 
   hero: {
-    badge: 'All 6 artifact classes live-proven',
+    badge: '7 trials \u2014 all 6 artifact classes live-proven',
     headline: 'Taste Compiler',
     headlineAccent: 'enforces product identity.',
     description: 'Compile product taste into enforceable constraints. 7 paired trials, 245 baseline violations reduced to 0 in constrained runs.',
