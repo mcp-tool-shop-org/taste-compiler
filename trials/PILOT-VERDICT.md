@@ -1,8 +1,8 @@
-# Taste Compiler — Phase 2 Pilot Verdict
+# Taste Compiler — Pilot Verdict (Phase 2 + Phase 3 Minimum)
 
 **Date:** 2026-04-02
-**Pilot scope:** 3 repos × 1 paired trial each (baseline vs constrained)
-**Result:** Qualified pass
+**Pilot scope:** 3 repos × 2 paired trials each (6 total)
+**Result:** Qualified pass → **Strong qualified pass** after Phase 3 minimum
 
 ---
 
@@ -72,12 +72,13 @@ Interaction-law pressure showed indirect effects (preview/commit separation, rea
 - Tasks that specifically tempt mode confusion (creative mode leaking into structured mode)
 - Tasks where the interaction-law constraint is the only thing preventing drift
 
-### OH-3: Goldens fire rarely but with high severity (H4 — inconclusive)
+### OH-3: Goldens fire rarely but with high severity (H4 — ~~inconclusive~~ RESOLVED)
 
-Zero golden failures in 3 trials. Could mean the pack prevented golden violations upstream, or the tasks did not hit golden-sensitive seams. Needs tasks that specifically tempt:
-- Export-truth divergence (export produces different data than editor shows)
-- Semantic/direct-mode blur (CommandUI)
-- Preview/commit breakage (GlyphStudio)
+**Phase 3 result:** World Forge golden-stress trial produced 2 golden violations:
+1. Validation-blocks-export bypass — export button always enabled, no validation gate
+2. **Canvas-not-modified-by-export** — "Auto-Fix Drift" button calls `updateZone()`, mutating project state from the export preview surface
+
+The silent mutation from an export-context component is the highest-severity finding across all 6 trials. Golden flows are a safety net with high value-per-trigger.
 
 ### OH-4: The pack's value is additive beyond plan-first discipline alone
 
@@ -161,14 +162,41 @@ Tasks designed to stress the open hypotheses and untested rule classes.
 
 ## Phase 3 Entry Criteria
 
-Phase 2 is complete. Phase 3 (broader trial matrix) should begin when:
+~~Phase 2 is complete. Phase 3 (broader trial matrix) should begin when:~~
 
-1. **CR-1 shipped** — inline-style scanner grouping, so World Forge violations don't inflate counts
-2. **At least 2 copy-stress tasks run** — to resolve OH-1
-3. **At least 1 golden-stress task run** — to resolve OH-3
-4. **Taste Compiler v0.2.0 tagged** — with Phase 2 trial artifacts included in the repo
+~~1. **CR-1 shipped** — inline-style scanner grouping~~
+~~2. **At least 2 copy-stress tasks run** — to resolve OH-1~~
+~~3. **At least 1 golden-stress task run** — to resolve OH-3~~
+~~4. **Taste Compiler v0.2.0 tagged**~~
 
-Phase 3 scope: 3 repos × 3 tasks each = 9 paired trials, covering all 6 artifact classes.
+**All 4 criteria met.** Phase 3 minimum is complete. The broader 9-trial matrix can begin when OH-2 (interaction laws) is also resolved.
+
+---
+
+## Phase 3 Minimum Results (2026-04-02)
+
+3 additional targeted trials resolving the open hypotheses:
+
+| Trial | Focus | Baseline | Constrained | Key Finding |
+|-------|-------|----------|-------------|-------------|
+| CommandUI — Recovery | Copy-stress | 56 (12 copy + 42 token + 1 FP + 1 budget) | 0 | Shell-tool copy: autonomy overclaiming, assistant persona |
+| GlyphStudio — Onboarding | Copy-stress | 31 (12 copy + 18 token + 1 budget) | 0 | Creative-tool copy: marketing voice, personality injection |
+| World Forge — Export Diff | Golden-stress | 44 (2 golden + 40 token + 2 FP) | 0 | First golden fire: silent mutation from read-only surface |
+
+### Hypotheses now resolved
+
+| Hypothesis | Status | Evidence |
+|------------|--------|----------|
+| H1 — Pack improves diffs | **Strongly supported** | 234→0 across 6 trials |
+| H2 — FP + budgets strongest early | **Supported** | Highest value, not highest volume |
+| H3 — Copy > interaction laws early | **Partially supported** | Copy proven, interaction laws still open (OH-2) |
+| H4 — Goldens rare but severe | **Confirmed** | 2 golden violations in 1/6 trials, highest severity |
+| H5 — Generation > post-hoc | **Strongly supported** | All constrained runs zero violations |
+
+### Still open
+
+- **OH-2** — Interaction laws: showed indirect effects only. Need a mode-confusion task.
+- **OH-4** — Pack vs workflow isolation: still tested as bundle, not individually.
 
 ---
 
@@ -176,10 +204,10 @@ Phase 3 scope: 3 repos × 3 tasks each = 9 paired trials, covering all 6 artifac
 
 | Question | Answer |
 |----------|--------|
-| Does the pack improve AI output? | **Yes** — 103 → 0 violations, structural shape changes |
-| Is it just cosmetic? | **No** — prevents dashboard creep, action-budget breaches, competing surfaces |
-| Which rule classes are proven? | Tokens, forbidden patterns, budgets |
-| Which are still open? | Copy, interaction laws, goldens |
-| Is the checker sufficient? | For token bypass, yes. For behavioral rules, needs refinement (CR-1 through CR-4) |
-| What is the biggest risk? | Overclaiming. 96/103 violations are one class (token bypass). Behavioral catches are real but lower-volume. |
-| Is Phase 2 done? | **Yes.** Qualified pass. The compiler works on real repos. |
+| Does the pack improve AI output? | **Yes** — 234 → 0 violations across 6 trials |
+| Is it just cosmetic? | **No** — prevents dashboard creep, action-budget breaches, competing surfaces, persona drift, silent mutations |
+| Which rule classes are proven? | **Tokens, forbidden patterns, budgets, copy, goldens** |
+| Which are still open? | **Interaction laws** (OH-2) |
+| Is the checker sufficient? | For tokens, yes. Copy and goldens need checker automation (CR-5, CR-6). |
+| What is the biggest risk? | Overclaiming breadth before interaction laws are resolved. |
+| Is Phase 3 minimum done? | **Yes.** Strong qualified pass. 5 of 6 artifact classes now have trial evidence. |
