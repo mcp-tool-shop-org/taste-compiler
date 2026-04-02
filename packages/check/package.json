@@ -1,6 +1,6 @@
 {
   "name": "@taste-compiler/check",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Static and diff-based validation against TastePack",
   "type": "module",
   "main": "dist/index.js",

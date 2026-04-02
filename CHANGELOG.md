@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.3.0] — 2026-04-02
+
+All 6 artifact classes live-proven. Phase 3 complete.
+
+### Added
+
+- **Interaction-law evaluator** (`packages/check/src/evaluators/law-checker.ts`) — detects LAW-001 through LAW-004 (destructive without confirmation, submit without validation, draft preservation, empty-state CTA)
+- **`ExtractedInteraction` type** — guard-based extraction for interaction patterns (`hasConfirmation`, `hasValidationGate`, `hasDraftPreservation`, `hasPrimaryAction`)
+- Interaction-law checker wired into `runChecks()` orchestrator — all 6 evaluators now fire in the standard pipeline
+- `interactions` field on `ExtractedTarget` — all consumers must provide interaction data
+- 12 new interaction-law tests (4 violation, 4 clean-pass, multi-violation, pack-aware skip, severity, all-clean)
+- Test doctrine document (`TEST-DOCTRINE.md`) — behavioral fixtures, regression fixture contract, coverage policy
+- README with canonical proof section, strongest-3-catches, quick start
+
+### Changed
+
+- Test fixture `makePack()` now includes all 4 default interaction laws (was only 1)
+- `runChecks` integration test now asserts LAW-001 alongside the other 5 rule classes
+- PILOT-VERDICT.md updated: all hypotheses resolved except OH-4
+
+### Trial results
+
+| Trial | Focus | Baseline | Constrained |
+|-------|-------|----------|-------------|
+| 7 — CommandUI Session History | Interaction-law isolation | 11 (4 LAW + 7 TOK) | 0 |
+
+**Cumulative:** 7 paired trials, 245 baseline violations → 0 constrained. All 6 artifact classes live-proven.
+
+### Proof status
+
+| Class | Status |
+|-------|--------|
+| Visual Tokens | Live-proven (7 trials) |
+| Component Grammar | Live-proven (3 trials) |
+| Interaction Laws | Live-proven (1 isolation trial) |
+| Copy Rules | Live-proven (2 copy-stress trials) |
+| Complexity Budgets | Live-proven (5 trials) |
+| Forbidden Patterns | Live-proven (4 trials) |
+| Golden Flows | Live-proven (1 golden-stress trial) |
+
+### Strongest truthful claim
+
+Taste Compiler compiles product taste into enforceable constraints that preserve visual coherence, identity boundaries, copy discipline, complexity limits, workflow invariants, and golden-path truth under AI-generated change. All 6 artifact classes are proven in paired trials on real repositories.
+
 ## [0.2.0] — 2026-04-02
 
 Phase 2 pilot complete. Taste Compiler is proven on real repos.

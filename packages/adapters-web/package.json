@@ -1,6 +1,6 @@
 {
   "name": "@taste-compiler/adapters-web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Adapters for React, Tailwind, routes, and copy scanning",
   "type": "module",
   "main": "dist/index.js",
